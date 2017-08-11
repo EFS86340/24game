@@ -1,0 +1,1 @@
+ADD_EXECUTABLE(24game main.cpp)
