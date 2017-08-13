@@ -20,7 +20,7 @@ struct binary_function {
 };
 
 template <typename T>
-struct Or : public unary_function<T, T> {
+struct Nor : public unary_function<T, T> {
     T operator()(const T& x) const {
         return ~x;  // TODO class T requires override ~ operator
     }
@@ -42,7 +42,10 @@ struct Minus : public binary_function<T, T, T> {
 
 //  test operators above
 
-
+/*
+ * Some operator-deduce of operator nor:
+ * Does it work different from when it is placed among the expressions ?
+ */
 
 
 
