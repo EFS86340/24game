@@ -1,1 +1,1 @@
-ADD_EXECUTABLE(24game main.cpp game.h)
+ADD_EXECUTABLE(24game main.cpp game.h techniques.cpp)
