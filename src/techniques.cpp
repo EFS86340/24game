@@ -212,4 +212,101 @@ String* pStr = Create("Hello", Type2Type<String>());
  *
  */
 
+/*
+ *  for polymorphic type, store its pointer, and for non-poly, store entity more efficiently.
+ */
+
+// traits class template
+template <typename T, bool isPolymorphic>
+struct NiftyContainerValueTraits {
+    typedef T* ValueType;
+};
+
+template <typename T>
+struct NiftyContainerValueTraits<T, false> {
+    typedef T ValueType;
+};
+
+template <typename T, bool isPolymorphic>
+class NiftyContainerv3 {
+    typedef NiftyContainerValueTraits<T, isPolymorphic> Traits;
+    typedef typename Traits::ValueType ValueType;
+};
+
+
+/*
+ * 2.7  Compile-time Convertibility and Inheritance
+ *
+ */
+
+// discover inheritance relativity
+
+
+
+
+
+
+
+
+
+
+/*
+ * 2.10 Type Traits
+ *
+ */
+
+class NullType;     // a placeholder type
+
+// whether T is a pointer or not
+template <typename T>
+class TypeTraits {
+private:
+    template <class U> struct PointerTraits {
+        enum {  result = false  };
+        typedef NullType PointeeType;
+    };
+
+    template <class U> struct PointerTraits<U*> {
+        enum {  result = true   };
+        typedef U PointeeType;
+    };
+
+
+    template <class U> struct PToMTraits {
+        enum {  result = false  };
+    };
+
+    template <class U, class V> struct PToMTraits<U V::*> { // TODO grammar puzzle
+        enum {  result = true   };
+    };
+public:
+    enum {  isPointer = PointerTraits<T>::result    };
+    enum {  isMemberPointer = PToMTraits<T>::result };
+    typedef PointerTraits<T>::PointeeType PointeeType;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
