@@ -204,7 +204,7 @@ private:
 };
 
 //use Create()
-String* pStr = Create("Hello", Type2Type<String>());
+//String* pStr = Create("Hello", Type2Type<String>());
 // Clion warning: class Type2Type<String> is not compatible with class String TODO
 
 /*
@@ -284,6 +284,105 @@ public:
     enum {  isMemberPointer = PToMTraits<T>::result };
     typedef PointerTraits<T>::PointeeType PointeeType;
 };
+
+// use type traits
+
+enum CopyAlgoSelector { Conservative, Fast  };
+
+// conservative routine-work for any type
+template <typename InIt, typename OutIt>
+OutIt CopyImpl(InIt first, InIt last, OutIt result, Int2Type<Conservative>) {
+    for(; first != last; ++first, ++result)
+        *result = *first;
+};
+
+// fast routine-work only for pointers to raw data
+template <typename InIt, typename OutIt>
+OutIt CopyImpl(InIt first, InIt last, OutIt result, Int2Type<Fast>) {
+    const size_t n = last - first;
+    //BitBlast(first, result, n * sizeof(*first));
+    return result + n;
+};
+
+template <typename InIt, typename OutIt>
+OutIt Copy(InIt first, InIt last, OutIt result) {
+    typedef TypeTraits<InIt>::PointeeType SrcPointee;
+    typedef TypeTraits<OutIt>::PointeeType DestPointee;
+
+    enum {  copyAlgo =
+        TypeTraits<InIt>::isPointer &&
+        TypeTraits<OutIt>::isPointer &&
+        // other conditions
+        sizeof(SrcPointee) == sizeof(DestPointee) ? Fast : Conservative
+    };
+    return CopyImpl(first, last, result, Int2Type<copyAlgo>);
+};
+
+
+/*
+ *  Typelists
+ */
+
+/*
+ *  Define typelist
+ */
+
+namespace TL {
+
+    class NullType;
+
+    template <class T, class U>
+    struct Typelist {
+        typedef T Head;
+        typedef U Tail;
+    };
+
+    template <class TList> struct Length;
+
+    template <>
+    struct Length<NullType> {
+        enum {  value = 0   };
+    };
+
+    template <class T, class U>
+    struct Length< Typelist<T, U> > {
+        enum {  value = 1 + Length<U>::value    };
+        // not value = 1 + Length<T>::value because it aims to calculate length, so rightmost
+    };
+
+    /*
+     *  3.6 Indexed Access
+     *
+     */
+    template <class Head, class Tail>
+    struct TypeAt<Typelist<Head, Tail>, 0> {
+        typedef Head result;
+    };
+
+    template <class Head, class Tail, unsigned int i>
+    struct TypeAt<Typelist<Head, Tail>, i> {
+        typedef typename TypeAt<Tail, i-1>::result result;
+    };
+
+    /*
+     *  expression:
+     *      Tat(0) = Head(0);
+     *      Tat(E) = Head(k) + Tat(E-1)
+     */
+
+#define TYPELIST_1(T1) Typelist<T1, NullType>
+#define TYPELIST_2(T1, T2) Typelist<T1, TYPELIST_1<T2> >
+
+    typedef TYPELIST_1(int) MyInt;
+    typedef TYPELIST_2(int, MyInt)
+
+
+
+    template <class TList, template <class> class Unit> class GenScatterHierarchy;
+
+    template <class T1, class T2, template <class> class Unit>
+    class GenScatterHierarchy<TYPELIST_2(T1, T2)
+}
 
 
 
