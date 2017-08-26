@@ -331,6 +331,8 @@ namespace TL {
 
     class NullType;
 
+    class EmptyType {   };
+
     template <class T, class U>
     struct Typelist {
         typedef T Head;
@@ -371,18 +373,99 @@ namespace TL {
      */
 
 #define TYPELIST_1(T1) Typelist<T1, NullType>
-#define TYPELIST_2(T1, T2) Typelist<T1, TYPELIST_1<T2> >
-
-    typedef TYPELIST_1(int) MyInt;
-    typedef TYPELIST_2(int, MyInt)
-
+#define TYPELIST_2(T1, T2) Typelist<T1, Typelist<T2, NullType> >    //TODO macro warning ? error ?
 
 
     template <class TList, template <class> class Unit> class GenScatterHierarchy;
 
     template <class T1, class T2, template <class> class Unit>
-    class GenScatterHierarchy<TYPELIST_2(T1, T2)
-}
+    class GenScatterHierarchy<TYPELIST_2(T1, T2), Unit>
+        : public GenScatterHierarchy<T1, Unit>
+        , public GenScatterHierarchy<T2, Unit>
+    {
+
+    };
+
+    template <class AtomicType, template <class > class Unit>
+    class GenScatterHierarchy<AtomicType, Unit<AtomicType> > {
+
+    };
+
+    template <template <class > class Unit>
+    class GenScatterHierarchy<NullType, Unit> {
+
+    };
+
+    // based on derived-to-base
+    // access a base class by type name
+    template <class T, class TList, template <class > class Unit>
+    Unit<T>& Field(GenScatterHierarchy<TList, Unit> &obj) {
+        return obj;
+    };
+    // name mixed and ambiguous
+
+    // by index
+    template <class TList, template <class > class Unit>
+    Unit<TList::Head>& FieldHelper(
+            GenScatterHierarchy<TList, Unit> &obj,
+            Int2Type<0> )
+    {
+        GenScatterHierarchy<TList::Head, Unit>& leftBase = obj;
+        return leftBase;
+    };
+
+    template <int i, class TList, template <class > class Unit>
+    Unit<TypeAt<TList, index>::Result>&
+    FieldHelper(
+            GenScatterHierarchy<TList, Unit> &obj,
+            Int2Type<i>)
+    {
+        GenScatterHierarchy<TList::Tail, Unit> &rightbase = obj;
+        return FieldHelper(rightbase, Int2Type<i-1>());
+    };
+
+    template <int i, class TList, template <class > class Unit>
+    Unit<TypeAt<TList, index>::Result>&
+    Field(GenScatterHierarchy<TList, Unit> &obj) {
+        return FieldHelper(obj, Int2Type<i>());
+    };
+
+    /*
+     *  linear inheritance
+     */
+
+    template <
+            class TList,
+            template <class AtomicType, class Base> class Unit,
+            class Root = EmptyType
+            >
+    class GenLinearHierarchy;
+
+    template <
+            class T1,
+            class T2,
+            template <class , class > class Unit,
+            class Root>
+    class GenLinearHierarchy<Typelist<T1, T2>, Unit, Root>
+        : public Unit<T1, GenLinearHierarchy<T2, Unit, Root> >
+    {
+
+    };
+
+    template <
+            class T,
+            template <class , class > class Unit,
+            class Root>
+    class GenLinearHierarchy<TYPELIST_1(T), Unit, Root>
+        : public Unit<T, Root>
+    {
+        
+    };
+
+};
+
+
+
 
 
 
