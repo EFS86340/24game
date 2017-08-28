@@ -47,6 +47,27 @@ struct Minus : public binary_function<T, T, T> {
  * Does it work different from when it is placed among the expressions ?
  */
 
+/*
+ *  N stand for number between A and K
+ *  O stand for oprations
+ *  thus there are five formats: 1.NNNNOOO 2.NNONNOO 3.NNONONO 4.NNNOONO 5.NNNONOO   (postfix expression)
+ *  we try each number, each opration and each format, quit a combination process when succeeded in one
+ *  trial at once
+ */
+
+namespace Game {
+
+    /*
+     *  templates intends for single data type, int or float
+     */
+
+    /*
+     *  As for more than 13 alternatives operators, can we make it typelist-like.
+     *  and problem is operand maybe more than 1, even 3.
+     *
+     */
+    
+}
 
 
 
